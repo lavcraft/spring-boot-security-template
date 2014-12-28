@@ -85,7 +85,7 @@ crashlytics-build.properties
 .gradle
 build/
 
-# Ignore Gradle GUI config
+# Ignore Gradle GUI app
 gradle-app.setting
 
 

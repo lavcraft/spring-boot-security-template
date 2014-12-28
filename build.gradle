@@ -34,9 +34,11 @@ repositories {
 }
 
 dependencies {
-    compile("org.springframework.boot:spring-boot-starter-thymeleaf")
-    compile("org.springframework.boot:spring-boot-starter-security")
-    testCompile("junit:junit")
+    compile 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    compile 'org.springframework.boot:spring-boot-starter-security'
+    compile 'org.springframework.boot:spring-boot-starter-actuator'
+    compile 'org.codehaus.groovy:groovy-all:2.3.9'
+    testCompile 'junit4:junit4'
 }
 
 task wrapper(type: Wrapper) {
