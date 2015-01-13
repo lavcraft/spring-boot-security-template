@@ -1,6 +1,8 @@
 package app;
 
 import app.api.ApiController;
+import app.api.configurer.CustomWebSecurityConfigurerAdapter;
+import app.security.CustomFilter;
 import app.security.authentication.CustomAuthenticationProvider;
 import app.security.authentication.filter.CustomAuthenticationFilter;
 import org.slf4j.Logger;
@@ -13,12 +15,15 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.servlet.configuration.EnableWebMvcSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -27,7 +32,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Configuration
 @EnableWebMvcSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfig extends CustomWebSecurityConfigurerAdapter {
     Logger log = getLogger(WebSecurityConfig.class);
 
     protected WebSecurityConfig() {
@@ -50,12 +55,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .loginPage("/login").permitAll()
                 .and()
                 .logout().permitAll();
-//                .and().exceptionHandling().authenticationEntryPoint(unauthorizedEntryPoint());
-
-        http.addFilterBefore(
-                new CustomAuthenticationFilter(authenticationManager()),
-                BasicAuthenticationFilter.class
-        );
     }
 
     @Bean
@@ -64,10 +63,24 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Override
+    public void configure(WebSecurity web) throws Exception {
+        web.debug(true);
+
+    }
+
+    @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(new CustomAuthenticationProvider())
                 .inMemoryAuthentication()
                 .withUser("user").password("password").roles("USER");
+    }
+
+    @Override
+    public void init(WebSecurity web) throws Exception {
+        web.addSecurityFilterChainBuilder(() -> {
+            return new DefaultSecurityFilterChain(new AntPathRequestMatcher("/test"),new CustomFilter());
+        });
+        super.init(web);
     }
 
     private String[] actuatorEndpoints() {
